@@ -1,0 +1,11 @@
+{
+  "name": "quasar-chest",
+  "version": "0.0.0",
+  "title": "Quasar chests",
+  "author": "Qypea",
+  "factorio_version": "1.1",
+  "dependencies": [
+      "base >= 1.1"
+  ],
+  "description": "Linked chests with circuit connections"
+}
