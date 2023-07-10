@@ -22,6 +22,11 @@ function configuration_changed()
 
     -- Set bar so no unfiltered slots can be filled with junk
     inventory.set_bar(index)
+
+    -- Clear to ensure nothing is in the wrong slots. Unfortunately this means
+    -- that you don't want to store things in this inventory when changing
+    -- mods or mod settings.
+    inventory.clear()
 end
 
 script.on_configuration_changed(configuration_changed)
