@@ -83,6 +83,10 @@ end
 function logistics_tick()
     -- Update the player's inventory based on logistics requests
     local player = game.get_player(1)
+    if player.character == nil then
+        return
+    end
+
     local player_inv = player.get_main_inventory()
     local quasar_inv = player.force.get_linked_inventory("quasar-chest", 0)
 
