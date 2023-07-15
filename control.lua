@@ -1,10 +1,5 @@
-function setup_inventory()
+function setup_inventory(inventory)
     -- Update our inventory filter for new items that mods may have provided
-    if global.inventory_setup == true then
-        return
-    end
-    local inventory = game.get_player(1).force.get_linked_inventory("quasar-chest", 0)
-
     -- For each not hidden item prototype
     local index = 1
     for item_name, item_value in pairs(game.item_prototypes) do
@@ -13,31 +8,33 @@ function setup_inventory()
         end
 
         -- Set one slot to filter for it
-        inventory.set_filter(index, item_name)
+        if inventory.set_filter(index, item_name) == false then
+            log("Set filter failed")
+            return
+        end
         index = index + 1
 
         ::continue::
     end
+    log(string.format("Set %d item filters", index))
 
     -- Set bar so no unfiltered slots can be filled with junk
-    inventory.set_bar(index)
+    if inventory.set_bar(index) == false then
+        log("Set bar failed")
+    end
 
     -- Clear to ensure nothing is in the wrong slots. Unfortunately this means
     -- that you don't want to store things in this inventory when changing
     -- mods or mod settings.
     inventory.clear()
-
-    global.inventory_setup = true
 end
 
-
-function configuration_changed()
-    -- Force an upgrade of inventory settings
-    global.inventory_setup = false
-    setup_inventory()
+function on_init()
+    -- Force rerunning setup_inventory
+    global.chest_initialized = false
 end
-
-script.on_configuration_changed(configuration_changed)
+script.on_configuration_changed(on_init)
+script.on_init(on_init)
 
 function player_created(event)
     -- Enable logistics requests panel in inventory, trash slots.
@@ -50,9 +47,6 @@ function player_created(event)
     if player.character then
         player.character_personal_logistic_requests_enabled = true
     end
-
-    -- Set up inventory if we get here and it isn't ready
-    setup_inventory()
 end
 script.on_event(defines.events.on_player_created, player_created)
 script.on_event(defines.events.on_player_joined_game, player_created)
@@ -83,12 +77,33 @@ end
 function logistics_tick()
     -- Update the player's inventory based on logistics requests
     local player = game.get_player(1)
+    if player == nil then
+        log("No player 1")
+        return
+    end
     if player.character == nil then
+        log("No character connected to player 1")
         return
     end
 
     local player_inv = player.get_main_inventory()
-    local quasar_inv = player.force.get_linked_inventory("quasar-chest", 0)
+    if player_inv == nil then
+        log("No player inventory")
+        return
+    end
+
+    -- why are the chests I create link_id 3 with space-exploration but
+    -- link_id 0 with nullius?
+    local quasar_inv = player.force.get_linked_inventory("quasar-chest", 3)
+    if quasar_inv == nil then
+        log("No linked inventory")
+        return
+    end
+
+    if global.chest_initialized == false then
+        setup_inventory(quasar_inv)
+        global.chest_initialized = true
+    end
 
     for i=1,1000 do -- for each logistics slot index(Hard limited by factorio to 1000)
         local request = player.get_personal_logistic_slot(i)
@@ -129,5 +144,4 @@ function logistics_tick()
         end
     end
 end
-
 script.on_nth_tick(120, logistics_tick)
