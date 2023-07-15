@@ -30,26 +30,21 @@ function setup_inventory(inventory)
 end
 
 function on_init()
-    -- Force rerunning setup_inventory
+    -- Force rerunning setup
     global.chest_initialized = false
+    global.player_initialized = false
 end
 script.on_configuration_changed(on_init)
 script.on_init(on_init)
 
-function player_created(event)
+function setup_player(player)
     -- Enable logistics requests panel in inventory, trash slots.
     -- Note that this enables logi bots to try to help with inventory, but
     -- they won't usually be able to. Probably best to not create logi bots.
-    local player = game.players[event.player_index]
-
     player.force.character_logistic_requests = true
     player.force.character_trash_slot_count = 10
-    if player.character then
-        player.character_personal_logistic_requests_enabled = true
-    end
+    player.character_personal_logistic_requests_enabled = true
 end
-script.on_event(defines.events.on_player_created, player_created)
-script.on_event(defines.events.on_player_joined_game, player_created)
 
 function try_move(in_inv, out_inv, item, count)
     -- Limit to what is available to move
@@ -98,6 +93,11 @@ function logistics_tick()
     if quasar_inv == nil then
         log("No linked inventory")
         return
+    end
+
+    if global.player_initialized == false then
+        setup_player(player)
+        global.player_initialized = true
     end
 
     if global.chest_initialized == false then
