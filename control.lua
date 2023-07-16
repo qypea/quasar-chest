@@ -81,9 +81,14 @@ function logistics_tick()
         return
     end
 
-    local player_inv = player.get_main_inventory()
+    local player_inv = player.get_inventory(defines.inventory.character_main)
     if player_inv == nil then
         log("No player inventory")
+        return
+    end
+    local player_ammo = player.get_inventory(defines.inventory.character_ammo)
+    if player_ammo == nil then
+        log("No player ammo")
         return
     end
 
@@ -111,7 +116,7 @@ function logistics_tick()
             goto continue
         end
 
-        local player_count = player_inv.get_item_count(request.name)
+        local player_count = player_inv.get_item_count(request.name) + player_ammo.get_item_count(request.name)
 
         if player.cursor_stack ~= nil and player.cursor_stack.valid_for_read and player.cursor_stack.name == request.name then
             -- Skip trying to fill things into inventory when we have that
