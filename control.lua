@@ -92,8 +92,8 @@ function logistics_tick()
     end
 
     -- why are the chests I create link_id 3 with space-exploration but
-    -- link_id 0 with nullius?
-    local quasar_inv = player.force.get_linked_inventory("quasar-chest", 3)
+    -- link_id 0 with nullius or stock?
+    local quasar_inv = player.force.get_linked_inventory("quasar-chest", 0)
     if quasar_inv == nil then
         log("No linked inventory")
         return
