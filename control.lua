@@ -32,7 +32,6 @@ end
 function on_init()
     -- Force rerunning setup
     global.chest_initialized = false
-    global.player_initialized = false
 end
 script.on_configuration_changed(on_init)
 script.on_init(on_init)
