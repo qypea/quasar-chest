@@ -41,7 +41,9 @@ function setup_player(player)
     -- Note that this enables logi bots to try to help with inventory, but
     -- they won't usually be able to. Probably best to not create logi bots.
     player.force.character_logistic_requests = true
-    player.force.character_trash_slot_count = 10
+    if player.force.character_trash_slot_count < 10 then
+        player.force.character_trash_slot_count = 10
+    end
     player.character_personal_logistic_requests_enabled = true
 end
 
@@ -99,10 +101,7 @@ function logistics_tick()
         return
     end
 
-    if global.player_initialized == false then
-        setup_player(player)
-        global.player_initialized = true
-    end
+    setup_player(player)
 
     if global.chest_initialized == false then
         setup_inventory(quasar_inv)
