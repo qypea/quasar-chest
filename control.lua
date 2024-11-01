@@ -2,7 +2,7 @@ function setup_inventory(inventory)
     -- Update our inventory filter for new items that mods may have provided
     -- For each not hidden item prototype
     local index = 1
-    for item_name, item_value in pairs(game.item_prototypes) do
+    for item_name, item_value in pairs(prototypes.item) do
         if item_value.flags and item_value.flags["hidden"] == true then
             goto continue
         end
@@ -31,8 +31,9 @@ end
 
 function on_init()
     -- Force rerunning setup
-    global.chest_initialized = false
+    storage.chest_initialized = false
 end
+
 script.on_configuration_changed(on_init)
 script.on_init(on_init)
 
@@ -44,10 +45,10 @@ function setup_player(player)
     if player.force.character_trash_slot_count < 10 then
         player.force.character_trash_slot_count = 10
     end
-    player.character_personal_logistic_requests_enabled = true
 end
 
 function try_move(in_inv, out_inv, item, count)
+    --log(string.format("try_move item=%s, count=%s", item, count))
     -- Limit to what is available to move
     local available = in_inv.get_item_count(item)
     if available < count then
@@ -59,13 +60,13 @@ function try_move(in_inv, out_inv, item, count)
     end
 
     -- Try to add first, as that can fail if inv is full or whatnot
-    local added = out_inv.insert({name=item, count=count})
+    local added = out_inv.insert({ name = item, count = count })
     if added == 0 then
         return false
     end
 
     -- Now remove only what we successfully added
-    local removed = in_inv.remove({name=item, count=added})
+    local removed = in_inv.remove({ name = item, count = added })
 
     return added ~= 0
 end
@@ -103,17 +104,13 @@ function logistics_tick()
 
     setup_player(player)
 
-    if global.chest_initialized == false then
+    if storage.chest_initialized == false then
         setup_inventory(quasar_inv)
-        global.chest_initialized = true
+        storage.chest_initialized = true
     end
 
-    for i=1,1000 do -- for each logistics slot index(Hard limited by factorio to 1000)
-        local request = player.get_personal_logistic_slot(i)
-        if request == nil or request.name == nil then
-            goto continue
-        end
-
+    local logistics = player.get_requester_point()
+    for _, request in ipairs(logistics.filters or {}) do
         local player_count = player_inv.get_item_count(request.name) + player_ammo.get_item_count(request.name)
 
         if player.cursor_stack ~= nil and player.cursor_stack.valid_for_read and player.cursor_stack.name == request.name then
@@ -123,8 +120,8 @@ function logistics_tick()
             goto continue
         end
 
-        if request.min ~= nil and player_count < request.min then
-            try_move(quasar_inv, player_inv, request.name, request.min - player_count)
+        if request.count ~= nil and player_count < request.count then
+            try_move(quasar_inv, player_inv, request.name, request.count - player_count)
             -- Doesn't matter if we succeed or not. Try again next tick
         end
 
@@ -135,16 +132,17 @@ function logistics_tick()
     end
 
     local player_trash = player.get_inventory(defines.inventory.character_trash)
-    for item_name, count in pairs(player_trash.get_contents()) do
+    for _, item in ipairs(player_trash.get_contents()) do
         -- Try to move from trash to quasar network
-        local moved_some = try_move(player_trash, quasar_inv, item_name, count)
+        local moved_some = try_move(player_trash, quasar_inv, item.name, item.count)
 
         -- If unable to move anything, throw it all away
         -- Allows us to feed things slowly into quasar chest if they're being
         -- consumed.
         if moved_some == false then
-            player_trash.remove({name=item_name, count=count})
+            player_trash.remove({ name = item.name, count = item.count })
         end
     end
 end
+
 script.on_nth_tick(120, logistics_tick)
