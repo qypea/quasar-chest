@@ -3,7 +3,7 @@ function setup_inventory(inventory)
     -- For each not hidden item prototype
     local index = 1
     for item_name, item_value in pairs(prototypes.item) do
-        if item_value.flags and item_value.flags["hidden"] == true then
+        if item_value.hidden == true or item_value.parameter == true then
             goto continue
         end
 
