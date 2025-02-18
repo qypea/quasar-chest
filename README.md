@@ -2,7 +2,7 @@
 Linked chest mod for factorio, to remove logistics from the list of things you have to worry about while working on your factory. Definitely going to be considered a cheat mod by some, but I like what it does to the game. Feel free to use as is or modify to your liking. It is licenced MIT to make that easy for you.
 
 Tested with nullius(with a quick compatibility mod that sets the order on the object and recipe so it shows up).
-Playing with space exploration in my current save.
+Playing with space age in my current save.
 
 ## Features
 1. No scripting for chests themselves -- all builtin linked-container behaviors make this very efficient
@@ -11,6 +11,7 @@ Playing with space exploration in my current save.
 4. Empties your player logistics trash slots to quasar space or destroys items if it can't
 5. Links across all surfaces, great for space exploration or factorissimo
 6. Partial filling and emptying of player logistics, so player gets a trickle of resources even under heavy demand
+7. Set slots for each quality tier or just normal quality
 
 ## Related mods
 Shout out to these mods for inspiration. If you don't quite like this mod's feature set I'd recommend glancing at these; one of them may meet your needs.

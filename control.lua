@@ -7,12 +7,22 @@ function setup_inventory(inventory)
             goto continue
         end
 
-        -- Set one slot to filter for it
-        if inventory.set_filter(index, item_name) == false then
-            log("Set filter failed")
-            return
+        -- Set one slot per quality level
+        for quality_name, quality_value in pairs(prototypes.quality) do
+            if quality_name == "quality-unknown" then
+                goto continue2
+            end
+            -- If disabled, set just for normal quality
+            if quality_name ~= "normal" and settings.startup["quasar-chest-all-qualities"].value == false then
+                goto continue2
+            end
+            if inventory.set_filter(index, { name = item_name, quality = quality_name, comparitor = "=" }) == false then
+                log("Set filter failed")
+                return
+            end
+            index = index + 1
+            ::continue2::
         end
-        index = index + 1
 
         ::continue::
     end
